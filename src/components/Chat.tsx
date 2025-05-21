@@ -1,18 +1,55 @@
-export default function Chat() {
+import { useState, type FormEvent } from "react";
+import { useSwitcher } from "../context/useSwitch";
+import type { Message } from "../types/types";
+import { useChats } from "../context/useChats";
+
+export default function Chat({
+  activeChatId,
+}: {
+  activeChatId: string | null;
+}) {
+  const { setIsChatting } = useSwitcher();
+  const [input, setInput] = useState("");
+  const { chats, setChats } = useChats();
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (input.trim() === "") return alert("Input is Empty");
+    const newMessage: Message = {
+      type: "prompt",
+      text: input!,
+      timeStamp: new Date().toLocaleTimeString(),
+    };
+
+    // const updatedMessages = [...chats, newMessage];
+    setChats(
+      chats.map((chat) => {
+        if (chat.id === activeChatId) {
+          return { id: chat.id, messages: [...chat.messages, newMessage] };
+        }
+        return chat;
+      })
+    );
+    setInput("");
+  };
+
   return (
     <div className=" h-full w-full pr-4 flex flex-col">
       <h3 className="text-2xl flex justify-between py-4 font-bold text-center ">
-        Chat with Ai <ArrowRight classes="cursor-pointer" />
+        Chat with Ai
+        <button onClick={() => setIsChatting(false)}>
+          <ArrowRight classes="cursor-pointer" />
+        </button>
       </h3>
       <div className="bg-gray-700 justify-between px-4 py-2 flex grow flex-col rounded-md">
         <div>
           <div className="flex justify-end">
-            <div className="w-fit mb-2 px-4 py-2 rounded-l-md bg-gradient-to-r from-violet-600 to-violet-400 rounded-br-3xl">
+            <div className="ask">
               <div>Hello, How are you?</div>
               <div className="text-sm text-right">22:02:25 PM</div>
             </div>
           </div>
-          <div className="response">
+          <div className="response ">
             Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quae amet
             nostrum vitae ipsam in delectus fugiat, doloribus eius voluptas
             voluptatibus odio fugit aspernatur aliquid id, facilis ut
@@ -22,14 +59,22 @@ export default function Chat() {
         </div>
         <span>Typing....</span>
       </div>
-      <form className="h-12 px-4 flex items-center bg-gray-700 my-4 rounded-md ">
+      <form
+        onSubmit={handleSubmit}
+        className="h-12 px-4 flex items-center bg-gray-700 my-4 rounded-md "
+      >
         <SmileFace />
         <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
           type="text"
           placeholder="Type a Message"
           className="grow h-full outline-0 px-4 "
+          name="message"
         />
-        <Airplane classes=" cursor-pointer" />
+        <button type="submit">
+          <Airplane classes=" cursor-pointer" />
+        </button>
       </form>
     </div>
   );

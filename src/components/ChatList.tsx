@@ -1,29 +1,54 @@
-export default function ChatList() {
+import { useChats } from "../context/useChats";
+
+export default function ChatList({
+  setActiveChatId,
+  activeChatId,
+}: {
+  setActiveChatId: (v: string) => void;
+  activeChatId: string;
+}) {
+  const { chats, setChats } = useChats();
+  const startNewChat = () => {
+    const newChat = {
+      id: `Chat ${new Date().toLocaleDateString(
+        "en-GB"
+      )} ${new Date().toLocaleTimeString()}`,
+      messages: [],
+    };
+    setChats([...chats, newChat]);
+  };
+  const deleteChat = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const filteredChats = chats.filter((chat) => chat.id !== id);
+    setChats(filteredChats);
+  };
   return (
     <div className="hidden md:block px-2 md:min-w-[270px]">
       <h2 className="text-2xl flex justify-between py-4">
-        ChatList <Edit classes="cursor-pointer" />
+        ChatList{" "}
+        <button onClick={startNewChat}>
+          <Edit classes="cursor-pointer" />
+        </button>
       </h2>
-      <i></i>
       <ul className="list-none">
-        <li className="p-2 flex justify-between items-center cursor-pointer mb-2 bg-gradient-to-r from-violet-700 to-violet-400 rounded-md">
-          <h4>Chat 17/05/2025 21:38:55 PM</h4>
-          <span className="bg-red-400 rounded-full w-4 h-4 block text-center text-xs">
-            X
-          </span>
-        </li>
-        <li className="p-2 mb-2 flex justify-between cursor-pointer items-center bg-gray-700 rounded-md">
-          <h4>Chat 17/05/2025 21:38:55 PM</h4>
-          <span className="bg-red-400 rounded-full w-4 h-4 block text-center text-xs">
-            X
-          </span>
-        </li>
-        <li className="p-2 mb-2 flex justify-between cursor-pointer items-center bg-gray-700 rounded-md">
-          <h4>Chat 17/05/2025 21:38:55 PM</h4>
-          <span className="bg-red-400 rounded-full w-4 h-4 block text-center text-xs">
-            X
-          </span>
-        </li>
+        {chats.map((chat, i) => (
+          <li
+            key={chat.id}
+            onClick={() => setActiveChatId(chat.id)}
+            className={`p-2 mb-2 flex justify-between cursor-pointer items-center bg-gray-700 rounded-md ${
+              ((!activeChatId && i === 0) || activeChatId === chat.id) &&
+              "!bg-blue-400"
+            }`}
+          >
+            <h4>{chat.id}</h4>
+            <span
+              onClick={(e) => deleteChat(e, chat.id)}
+              className="bg-red-400 rounded-full w-4 h-4 block text-center text-xs"
+            >
+              X
+            </span>
+          </li>
+        ))}
       </ul>
     </div>
   );
