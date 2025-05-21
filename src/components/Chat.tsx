@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useSwitcher } from "../context/useSwitch";
-import type { Message } from "../types/types";
+import type { Message, Chat as ChatType } from "../types/types";
 import { useChats } from "../context/useChats";
 
 export default function Chat({
@@ -11,25 +11,26 @@ export default function Chat({
   const { setIsChatting } = useSwitcher();
   const [input, setInput] = useState("");
   const { chats, setChats } = useChats();
-
+  const activeChat: ChatType =
+    chats.filter((chat) => chat.id !== activeChatId)[0] ?? chats[0];
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (input.trim() === "") return alert("Input is Empty");
     const newMessage: Message = {
       type: "prompt",
-      text: input!,
+      text: input,
       timeStamp: new Date().toLocaleTimeString(),
     };
 
-    // const updatedMessages = [...chats, newMessage];
     setChats(
       chats.map((chat) => {
-        if (chat.id === activeChatId) {
+        if (chat.id === activeChat.id) {
           return { id: chat.id, messages: [...chat.messages, newMessage] };
         }
         return chat;
       })
     );
+
     setInput("");
   };
 
@@ -41,24 +42,22 @@ export default function Chat({
           <ArrowRight classes="cursor-pointer" />
         </button>
       </h3>
-      <div className="bg-gray-700 justify-between px-4 py-2 flex grow flex-col rounded-md">
+      <ul className="bg-gray-700 justify-between px-4 py-2 flex grow flex-col rounded-md">
         <div>
-          <div className="flex justify-end">
-            <div className="ask">
-              <div>Hello, How are you?</div>
-              <div className="text-sm text-right">22:02:25 PM</div>
-            </div>
-          </div>
-          <div className="response ">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quae amet
-            nostrum vitae ipsam in delectus fugiat, doloribus eius voluptas
-            voluptatibus odio fugit aspernatur aliquid id, facilis ut
-            reprehenderit adipisci commodi.
-            <div className="text-sm text-right">12:59:52 PM</div>
-          </div>
+          {activeChat.messages.map((msg, i) => (
+            <li
+              key={i}
+              className={msg.type === "prompt" ? "flex justify-end" : ""}
+            >
+              <div className={msg.type === "prompt" ? "ask" : ""}>
+                <div>{msg.text}</div>
+                <div className="text-sm text-right">{msg.timeStamp}</div>
+              </div>
+            </li>
+          ))}
         </div>
         <span>Typing....</span>
-      </div>
+      </ul>
       <form
         onSubmit={handleSubmit}
         className="h-12 px-4 flex items-center bg-gray-700 my-4 rounded-md "
